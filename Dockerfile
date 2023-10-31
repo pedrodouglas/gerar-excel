@@ -1,14 +1,32 @@
-# Use an official OpenJDK runtime as a parent image
-FROM adoptopenjdk:11-jre-hotspot
+# Estágio de construção (build)
+FROM maven:3.8.4-openjdk-11-slim AS build
 
-# Set the working directory inside the container
+# Diretório de trabalho para a aplicação
 WORKDIR /app
 
-# Copy the packaged JAR file into the container at the specified path
-COPY target/gerar-excel-0.0.1-SNAPSHOT.jar app.jar
+# Copie apenas o arquivo pom.xml para obter dependências
+COPY pom.xml .
 
-# Expose the port that the application will run on
+# Baixe as dependências do Maven (isso ajuda a cachear as dependências se o arquivo pom não mudar)
+RUN mvn dependency:go-offline
+
+# Copie todo o código-fonte
+COPY src ./src
+
+# Construa o projeto com Maven
+RUN mvn clean package -DskipTests
+
+# Estágio de execução
+FROM openjdk:11-jre-slim
+
+# Porta que a aplicação vai usar
 EXPOSE 8080
 
-# Run the application when the container launches
-CMD ["java", "-jar", "app.jar"]
+# Diretório de trabalho para a aplicação
+WORKDIR /app
+
+# Copie o arquivo JAR construído a partir do estágio de construção
+COPY --from=build /app/target/gerar-excel-0.0.1-SNAPSHOT.jar app.jar
+
+# Comando para iniciar a aplicação quando o contêiner iniciar
+ENTRYPOINT ["java", "-jar", "app.jar"]
