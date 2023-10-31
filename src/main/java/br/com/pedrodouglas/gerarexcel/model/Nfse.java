@@ -8,6 +8,8 @@ public class Nfse {
     private double cofins;
     private double irpj;
     private double csll;
+
+    private double iss;
     public String getNumero() {
         return numero;
     }
@@ -54,5 +56,13 @@ public class Nfse {
 
     public void setCsll(double csll) {
         this.csll = csll;
+    }
+
+    public double getIss() {
+        return iss;
+    }
+
+    public void setIss(double iss) {
+        this.iss = iss;
     }
 }

@@ -22,6 +22,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class NfseService {
@@ -48,6 +49,7 @@ public class NfseService {
                     nfse.setCofins(Double.parseDouble(nfseElement.getElementsByTagName("ValorCofins").item(0).getTextContent()));
                     nfse.setIrpj(Double.parseDouble(nfseElement.getElementsByTagName("ValorIr").item(0).getTextContent()));
                     nfse.setCsll(Double.parseDouble(nfseElement.getElementsByTagName("ValorCsll").item(0).getTextContent()));
+                    nfse.setIss(Double.parseDouble(nfseElement.getElementsByTagName("ValorIss").item(0).getTextContent()));
                     nfseList.add(nfse);
                 }
             }
@@ -70,6 +72,7 @@ public class NfseService {
             headerRow.createCell(3).setCellValue("COFINS");
             headerRow.createCell(4).setCellValue("IRPJ");
             headerRow.createCell(5).setCellValue("CSLL");
+            headerRow.createCell(6).setCellValue("ISS");
 
             int rowNum = 1;
             for (Nfse nfse : nfseList) {
@@ -80,6 +83,7 @@ public class NfseService {
                 row.createCell(3).setCellValue(nfse.getCofins());
                 row.createCell(4).setCellValue(nfse.getIrpj());
                 row.createCell(5).setCellValue(nfse.getCsll());
+                row.createCell(6).setCellValue(Objects.isNull(nfse.getIss()) ? 0 :nfse.getIss() );
             }
 
             // Escreva o arquivo Excel em um ByteArrayOutputStream
@@ -96,7 +100,7 @@ public class NfseService {
              CSVPrinter csvPrinter = new CSVPrinter(new OutputStreamWriter(outputStream), CSVFormat.DEFAULT)) {
 
             // Adicione cabeçalhos ao CSV
-            csvPrinter.printRecord("Nota Fiscal", "Valor", "PIS", "COFINS", "IRPJ", "CSLL");
+            csvPrinter.printRecord("Nota Fiscal", "Valor", "PIS", "COFINS", "IRPJ", "CSLL","ISS");
 
             // Adicione dados ao CSV
             for (Nfse nfse : nfseList) {
