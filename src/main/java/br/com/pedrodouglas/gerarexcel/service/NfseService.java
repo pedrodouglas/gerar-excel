@@ -66,14 +66,20 @@ public class NfseService {
             Row headerRow = sheet.createRow(0);
             headerRow.createCell(0).setCellValue("Nota Fiscal");
             headerRow.createCell(1).setCellValue("Valor");
-            // Adicione mais colunas conforme necessário
+            headerRow.createCell(2).setCellValue("PIS");
+            headerRow.createCell(3).setCellValue("COFINS");
+            headerRow.createCell(4).setCellValue("IRPJ");
+            headerRow.createCell(5).setCellValue("CSLL");
 
             int rowNum = 1;
             for (Nfse nfse : nfseList) {
-                Row row = ((XSSFSheet) sheet).createRow(rowNum++);
+                Row row = sheet.createRow(rowNum++);
                 row.createCell(0).setCellValue(nfse.getNumero());
                 row.createCell(1).setCellValue(nfse.getValor());
-                // Preencha outras células conforme necessário
+                row.createCell(2).setCellValue(nfse.getPis());
+                row.createCell(3).setCellValue(nfse.getCofins());
+                row.createCell(4).setCellValue(nfse.getIrpj());
+                row.createCell(5).setCellValue(nfse.getCsll());
             }
 
             // Escreva o arquivo Excel em um ByteArrayOutputStream

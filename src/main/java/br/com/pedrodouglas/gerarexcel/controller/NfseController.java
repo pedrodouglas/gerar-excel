@@ -54,13 +54,13 @@ public class NfseController {
             if (fileName != null && fileName.toLowerCase().endsWith(".xml")) {
                 String xmlData = new String(file.getBytes());
                 List<Nfse> nfseList = nfseService.parseNfseData(xmlData);
-                byte[] csvBytes = nfseService.gerarCSV(nfseList);
+                byte[] excelBytes = nfseService.gerarExcel(nfseList);
 
                 HttpHeaders headers = new HttpHeaders();
                 headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-                headers.setContentDispositionFormData("attachment", "notas_fiscais.csv");
+                headers.setContentDispositionFormData("attachment", "notas_fiscais.xlsx");
 
-                return ResponseEntity.ok().headers(headers).body(csvBytes);
+                return ResponseEntity.ok().headers(headers).body(excelBytes);
             } else {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Por favor, escolha um arquivo XML válido.".getBytes());
             }
