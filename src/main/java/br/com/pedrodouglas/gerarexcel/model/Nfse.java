@@ -8,8 +8,9 @@ public class Nfse {
     private double cofins;
     private double irpj;
     private double csll;
-
     private double iss;
+
+    private double inss;
     public String getNumero() {
         return numero;
     }
@@ -64,5 +65,13 @@ public class Nfse {
 
     public void setIss(double iss) {
         this.iss = iss;
+    }
+
+    public double getInss() {
+        return inss;
+    }
+
+    public void setInss(double inss) {
+        this.inss = inss;
     }
 }

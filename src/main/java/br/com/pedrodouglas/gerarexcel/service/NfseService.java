@@ -50,6 +50,7 @@ public class NfseService {
                     nfse.setIrpj(Double.parseDouble(nfseElement.getElementsByTagName("ValorIr").item(0).getTextContent()));
                     nfse.setCsll(Double.parseDouble(nfseElement.getElementsByTagName("ValorCsll").item(0).getTextContent()));
                     nfse.setIss(Double.parseDouble(nfseElement.getElementsByTagName("ValorIss").item(0).getTextContent()));
+                    nfse.setInss(Double.parseDouble(nfseElement.getElementsByTagName("ValorInss").item(0).getTextContent()));
                     nfseList.add(nfse);
                 }
             }
@@ -73,6 +74,7 @@ public class NfseService {
             headerRow.createCell(4).setCellValue("IRPJ");
             headerRow.createCell(5).setCellValue("CSLL");
             headerRow.createCell(6).setCellValue("ISS");
+            headerRow.createCell(7).setCellValue("INSS");
 
             int rowNum = 1;
             for (Nfse nfse : nfseList) {
@@ -84,6 +86,7 @@ public class NfseService {
                 row.createCell(4).setCellValue(nfse.getIrpj());
                 row.createCell(5).setCellValue(nfse.getCsll());
                 row.createCell(6).setCellValue(Objects.isNull(nfse.getIss()) ? 0 :nfse.getIss() );
+                row.createCell(7).setCellValue(Objects.isNull(nfse.getInss()) ? 0 :nfse.getIss() );
             }
 
             // Escreva o arquivo Excel em um ByteArrayOutputStream
@@ -100,11 +103,11 @@ public class NfseService {
              CSVPrinter csvPrinter = new CSVPrinter(new OutputStreamWriter(outputStream), CSVFormat.DEFAULT)) {
 
             // Adicione cabeçalhos ao CSV
-            csvPrinter.printRecord("Nota Fiscal", "Valor", "PIS", "COFINS", "IRPJ", "CSLL","ISS");
+            csvPrinter.printRecord("Nota Fiscal", "Valor", "PIS", "COFINS", "IRPJ", "CSLL","ISS", "INSS");
 
             // Adicione dados ao CSV
             for (Nfse nfse : nfseList) {
-                csvPrinter.printRecord(nfse.getNumero(), nfse.getValor(), nfse.getPis(), nfse.getCofins(), nfse.getIrpj(), nfse.getCsll());
+                csvPrinter.printRecord(nfse.getNumero(), nfse.getValor(), nfse.getPis(), nfse.getCofins(), nfse.getIrpj(), nfse.getCsll(), nfse.getInss());
             }
 
             csvPrinter.flush();
