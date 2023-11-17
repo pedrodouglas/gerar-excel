@@ -86,8 +86,9 @@ public class NfseService {
                 row.createCell(4).setCellValue(nfse.getIrpj());
                 row.createCell(5).setCellValue(nfse.getCsll());
                 row.createCell(6).setCellValue(Objects.isNull(nfse.getIss()) ? 0 :nfse.getIss() );
-                row.createCell(7).setCellValue(Objects.isNull(nfse.getInss()) ? 0 :nfse.getIss() );
+                row.createCell(7).setCellValue(Objects.isNull(nfse.getInss()) ? 0 :nfse.getInss() );
             }
+
 
             // Escreva o arquivo Excel em um ByteArrayOutputStream
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
