@@ -6,6 +6,7 @@ import org.apache.commons.csv.CSVPrinter;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
@@ -77,6 +78,10 @@ public class NfseService {
             headerRow.createCell(7).setCellValue("INSS");
 
             int rowNum = 1;
+            double valorTotal = 0;
+            double totalPis = 0;
+            double totalCofins = 0;
+
             for (Nfse nfse : nfseList) {
                 Row row = sheet.createRow(rowNum++);
                 row.createCell(0).setCellValue(nfse.getNumero());
@@ -85,12 +90,26 @@ public class NfseService {
                 row.createCell(3).setCellValue(nfse.getCofins());
                 row.createCell(4).setCellValue(nfse.getIrpj());
                 row.createCell(5).setCellValue(nfse.getCsll());
-                row.createCell(6).setCellValue(Objects.isNull(nfse.getIss()) ? 0 :nfse.getIss() );
-                row.createCell(7).setCellValue(Objects.isNull(nfse.getInss()) ? 0 :nfse.getInss() );
+                row.createCell(6).setCellValue(Objects.isNull(nfse.getIss()) ? 0 : nfse.getIss());
+                row.createCell(7).setCellValue(Objects.isNull(nfse.getInss()) ? 0 : nfse.getInss());
+
+                valorTotal += nfse.getValor();
+                totalPis += nfse.getPis(); // Adiciona o valor de PIS para o total
+                totalCofins += nfse.getCofins(); // Adiciona o valor de COFINS para o total
+            }
+
+            Row totalRow = sheet.createRow(rowNum);
+            totalRow.createCell(0).setCellValue("Totais");
+            for (int i = 1; i <= 7; i++) {
+                // Calcular e adicionar os totais das colunas 1 a 7
+                CellReference startCellRef = new CellReference(2, i, false, false);
+                CellReference endCellRef = new CellReference(rowNum - 1, i, false, false);
+
+                String formula = "SUM(" + startCellRef.formatAsString() + ":" + endCellRef.formatAsString() + ")";
+                totalRow.createCell(i).setCellFormula(formula);
             }
 
 
-            // Escreva o arquivo Excel em um ByteArrayOutputStream
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             workbook.write(outputStream);
             return outputStream.toByteArray();
