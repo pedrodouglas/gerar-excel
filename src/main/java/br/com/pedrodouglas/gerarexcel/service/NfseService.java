@@ -79,8 +79,8 @@ public class NfseService {
 
             int rowNum = 1;
             double valorTotal = 0;
-            double totalPis = 0;
-            double totalCofins = 0;
+            double pisNotaFiscal = 0;
+            double totalCofinsNota = 0;
 
             for (Nfse nfse : nfseList) {
                 Row row = sheet.createRow(rowNum++);
@@ -94,8 +94,8 @@ public class NfseService {
                 row.createCell(7).setCellValue(Objects.isNull(nfse.getInss()) ? 0 : nfse.getInss());
 
                 valorTotal += nfse.getValor();
-                totalPis += nfse.getPis(); // Adiciona o valor de PIS para o total
-                totalCofins += nfse.getCofins(); // Adiciona o valor de COFINS para o total
+                pisNotaFiscal += nfse.getPis(); // Adiciona o valor de PIS para o total
+                totalCofinsNota += nfse.getCofins(); // Adiciona o valor de COFINS para o total
             }
 
             Row totalRow = sheet.createRow(rowNum);
@@ -108,6 +108,38 @@ public class NfseService {
                 String formula = "SUM(" + startCellRef.formatAsString() + ":" + endCellRef.formatAsString() + ")";
                 totalRow.createCell(i).setCellFormula(formula);
             }
+
+            int rowNumFinal = rowNum + 2;
+            Row pis = sheet.createRow(rowNumFinal);
+
+            double pisTotal = valorTotal * 0.0065;
+            pisTotal = Math.round(pisTotal * 100.0) / 100.0;
+
+            pis.createCell(0).setCellValue("pis");
+            pis.createCell(1).setCellValue(pisTotal);
+
+            Row pisRetido = sheet.createRow(rowNumFinal + 1);
+            pisRetido.createCell(0).setCellValue("pis retido");
+            pisRetido.createCell(1).setCellValue(pisNotaFiscal);
+
+            Row pisARecolher = sheet.createRow(rowNumFinal + 2);
+            pisARecolher.createCell(0).setCellValue("pis a recolher");
+            pisARecolher.createCell(1).setCellValue(pisTotal - pisNotaFiscal);
+
+            Row cofins = sheet.createRow(rowNumFinal + 4);
+            double totalConfis = valorTotal * 0.03;
+            totalConfis = Math.round(totalConfis * 100.0) / 100.0;
+            cofins.createCell(0).setCellValue("cofins");
+            cofins.createCell(1).setCellValue(totalConfis);
+
+            Row confisRetido = sheet.createRow(rowNumFinal + 5);
+            confisRetido.createCell(0).setCellValue("cofins retido");
+            confisRetido.createCell(1).setCellValue(totalCofinsNota);
+
+            Row cofinsARecolher = sheet.createRow(rowNumFinal + 6);
+            cofinsARecolher.createCell(0).setCellValue("cofins a recolher");
+            cofinsARecolher.createCell(1).setCellValue(totalConfis - totalCofinsNota);
+
 
 
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
