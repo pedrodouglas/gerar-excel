@@ -115,7 +115,7 @@ public class NfseService {
             totalRow.createCell(0).setCellValue("Totais");
             for (int i = 1; i <= 7; i++) {
                 // Calcular e adicionar os totais das colunas 1 a 7
-                CellReference startCellRef = new CellReference(2, i, false, false);
+                CellReference startCellRef = new CellReference(1, i, false, false);
                 CellReference endCellRef = new CellReference(rowNum - 1, i, false, false);
 
                 String formula = "SUM(" + startCellRef.formatAsString() + ":" + endCellRef.formatAsString() + ")";
