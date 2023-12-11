@@ -52,6 +52,7 @@ public class NfseService {
                     nfse.setCsll(Double.parseDouble(nfseElement.getElementsByTagName("ValorCsll").item(0).getTextContent()));
                     nfse.setIss(Double.parseDouble(nfseElement.getElementsByTagName("ValorIss").item(0).getTextContent()));
                     nfse.setInss(Double.parseDouble(nfseElement.getElementsByTagName("ValorInss").item(0).getTextContent()));
+                    nfse.setSituacao(nfseElement.getElementsByTagName("Codigo").item(0).getTextContent());
                     nfseList.add(nfse);
                 }
             }
@@ -84,6 +85,18 @@ public class NfseService {
 
             for (Nfse nfse : nfseList) {
                 Row row = sheet.createRow(rowNum++);
+
+                if(nfse.getSituacao().equalsIgnoreCase("L040")){
+                    nfse.setValor(0);
+                    nfse.setPis(0);
+                    nfse.setCofins(0);
+                    nfse.setIrpj(0);
+                    nfse.setCsll(0);
+                    nfse.setInss(0);
+                    nfse.setIss(0);
+                }
+
+
                 row.createCell(0).setCellValue(nfse.getNumero());
                 row.createCell(1).setCellValue(nfse.getValor());
                 row.createCell(2).setCellValue(nfse.getPis());

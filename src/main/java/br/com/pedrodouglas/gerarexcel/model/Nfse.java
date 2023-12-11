@@ -9,8 +9,8 @@ public class Nfse {
     private double irpj;
     private double csll;
     private double iss;
-
     private double inss;
+    private String situacao;
     public String getNumero() {
         return numero;
     }
@@ -74,4 +74,14 @@ public class Nfse {
     public void setInss(double inss) {
         this.inss = inss;
     }
+
+
+    public String getSituacao() {
+        return situacao;
+    }
+
+    public void setSituacao(String situacao) {
+        this.situacao = situacao;
+    }
+
 }
