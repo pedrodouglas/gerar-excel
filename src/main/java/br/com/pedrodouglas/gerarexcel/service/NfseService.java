@@ -86,7 +86,7 @@ public class NfseService {
             for (Nfse nfse : nfseList) {
                 Row row = sheet.createRow(rowNum++);
 
-                if(nfse.getSituacao().equalsIgnoreCase("L040")){
+                if(nfse.getSituacao().equalsIgnoreCase("L040") ||  nfse.getSituacao().equalsIgnoreCase("L050")){
                     nfse.setValor(0);
                     nfse.setPis(0);
                     nfse.setCofins(0);
