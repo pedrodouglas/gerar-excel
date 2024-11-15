@@ -272,8 +272,17 @@ public class NotaFiscalService {
             }
 
             for (int i = 0; i < 8; i++) {
-                sheet.autoSizeColumn(i);
+                int maxLength = 0;
+                for (int j = 0; j < nfseList.size(); j++) {
+                    Row row = sheet.getRow(j);
+                    String cellValue = row.getCell(i).getStringCellValue();
+                    if (cellValue.length() > maxLength) {
+                        maxLength = cellValue.length();
+                    }
+                }
+                sheet.setColumnWidth(i, maxLength * 400); // Ajuste proporcionalmente
             }
+
 
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             workbook.write(outputStream);
