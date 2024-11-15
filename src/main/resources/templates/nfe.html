@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerar relatório NF-E</title>
+    <div id="loading" style="display: none;">
+        <div class="spinner"></div>
+        <p>Carregando...</p>
+    </div>
+
     <style>
         * {
             margin: 0;
@@ -119,6 +124,32 @@
             font-weight: 600;
         }
 
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
         @media (max-width: 768px) {
             body {
                 padding: 1rem;
@@ -190,10 +221,13 @@
         async function importarNotas() {
             const fileInput = document.getElementById('fileNotas');
             const formData = new FormData();
+            const loading = document.getElementById('loading');
 
             for (const file of fileInput.files) {
                 formData.append('fileNotas', file);
             }
+
+            loading.style.display = 'flex';
 
             try {
                 const response = await fetch('/api/upload-nfe', {
@@ -210,10 +244,15 @@
             } catch (error) {
                 console.error('Erro:', error);
                 alert('Erro ao processar a requisição.');
+            } finally {
+                loading.style.display = 'none';
             }
         }
 
         async function gerarExcel() {
+            const loading = document.getElementById('loading');
+            loading.style.display = 'flex';
+
             try {
                 const response = await fetch('/api/downloadExcel');
                 if (response.ok) {
@@ -231,6 +270,8 @@
             } catch (error) {
                 console.error('Erro:', error);
                 alert('Erro ao gerar o Excel.');
+            } finally {
+                loading.style.display = 'none';
             }
         }
 

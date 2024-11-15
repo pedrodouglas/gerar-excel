@@ -277,6 +277,7 @@ public class NotaFiscalService {
 
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             workbook.write(outputStream);
+            dellAll();
             return outputStream.toByteArray();
         }
     }
@@ -288,6 +289,10 @@ public class NotaFiscalService {
 
     public void saveAll(List<Nfe> nfseList) {
         nfeRepository.saveAll(nfseList);
+    }
+
+    public void dellAll() {
+        nfeRepository.deleteAll();
     }
 
 
