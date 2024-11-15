@@ -19,6 +19,11 @@ RUN mvn clean package -DskipTests
 # Estágio de execução
 FROM openjdk:11-jre-slim
 
+# Instale dependências necessárias para a biblioteca de fontes
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libfreetype6 \
+    && rm -rf /var/lib/apt/lists/*
+
 # Porta que a aplicação vai usar
 EXPOSE 8080
 
