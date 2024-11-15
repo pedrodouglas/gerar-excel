@@ -72,6 +72,7 @@ public class NotaFiscalController {
         try {
             excelBytes = notaFiscalService.gerarExcelNfe(notasFiscais);
         } catch (IOException e) {
+            notaFiscalService.dellAll();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
 
