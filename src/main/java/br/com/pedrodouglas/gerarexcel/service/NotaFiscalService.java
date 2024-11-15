@@ -271,7 +271,7 @@ public class NotaFiscalService {
                 row.createCell(7).setCellValue(nfe.getCalculo());
             }
 
-            for (int i = 0; i < 6; i++) {
+            for (int i = 0; i < 8; i++) {
                 sheet.autoSizeColumn(i);
             }
 
