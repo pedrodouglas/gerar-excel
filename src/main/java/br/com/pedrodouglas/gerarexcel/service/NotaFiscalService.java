@@ -3,9 +3,7 @@ package br.com.pedrodouglas.gerarexcel.service;
 import br.com.pedrodouglas.gerarexcel.model.Nfe;
 import br.com.pedrodouglas.gerarexcel.model.Nfse;
 import br.com.pedrodouglas.gerarexcel.repository.NfeRepository;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
@@ -274,13 +272,28 @@ public class NotaFiscalService {
                 int maxLength = 0;
                 for (int j = 0; j < nfseList.size(); j++) {
                     Row row = sheet.getRow(j);
-                    String cellValue = row.getCell(i).getStringCellValue();
+
+                    // Verifique o tipo de célula
+                    Cell cell = row.getCell(i);
+                    String cellValue = "";
+
+                    // Se a célula for numérica, pegue o valor numérico
+                    if (cell.getCellType() == CellType.NUMERIC) {
+                        cellValue = String.valueOf(cell.getNumericCellValue());
+                    }
+                    // Se a célula for do tipo string, pegue o valor de string
+                    else if (cell.getCellType() == CellType.STRING) {
+                        cellValue = cell.getStringCellValue();
+                    }
+
                     if (cellValue.length() > maxLength) {
                         maxLength = cellValue.length();
                     }
                 }
+                // Ajuste a largura da coluna
                 sheet.setColumnWidth(i, maxLength * 400); // Ajuste proporcionalmente
             }
+
 
 
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
