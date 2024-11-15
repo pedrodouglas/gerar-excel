@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerar relatório NF-E</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 2rem;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin: 2rem 0;
+            font-size: 2.2rem;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .actions-wrapper {
+            max-width: 1200px;
+            margin: 0 auto 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0 1rem;
+        }
+
+        .file-input-wrapper {
+            flex: 1;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #3498db;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        input[type="file"]:hover {
+            border-color: #2980b9;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn {
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: white;
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            background: linear-gradient(45deg, #2980b9, #3498db);
+        }
+
+        .voltar-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+        }
+
+        .table-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            overflow-x: auto;
+            padding: 0 1rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 0.8rem;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: #f8f9fa;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .red {
+            color: #e74c3c;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+                margin: 3rem 0 1.5rem;
+            }
+
+            .actions-wrapper {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                text-align: center;
+            }
+
+            .voltar-btn {
+                position: static;
+                display: block;
+                margin: 1rem auto;
+                width: fit-content;
+            }
+
+            table {
+                font-size: 0.7rem;
+            }
+
+            th, td {
+                padding: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="btn voltar-btn">Voltar</a>
+    <h1>Gerar relatório NF-E</h1>
+
+    <div class="actions-wrapper">
+        <div class="file-input-wrapper">
+            <input type="file" id="fileNotas" name="fileNotas" accept=".xml" multiple>
+        </div>
+        <button onclick="importarNotas()" class="btn">Importar Notas</button>
+        <button onclick="gerarExcel()" class="btn">Gerar Excel</button>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Número</th>
+                    <th>Data</th>
+                    <th>Empresa</th>
+                    <th>CFOP</th>
+                    <th>ICMS</th>
+                    <th>Base de Cálculo</th>
+                    <th>Valor Total</th>
+                    <th>Base de Cálculo - Protege</th>
+                </tr>
+            </thead>
+            <tbody id="notasFiscaisTableBody">
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        async function importarNotas() {
+            const fileInput = document.getElementById('fileNotas');
+            const formData = new FormData();
+
+            for (const file of fileInput.files) {
+                formData.append('fileNotas', file);
+            }
+
+            try {
+                const response = await fetch('/api/upload-nfe', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const notasFiscais = await response.json();
+                    atualizarTabela(notasFiscais);
+                } else {
+                    alert('Erro ao importar as notas fiscais.');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao processar a requisição.');
+            }
+        }
+
+        async function gerarExcel() {
+            try {
+                const response = await fetch('/api/downloadExcel');
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'notas_fiscais.xlsx';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                } else {
+                    alert('Erro ao gerar o Excel.');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao gerar o Excel.');
+            }
+        }
+
+        function atualizarTabela(notasFiscais) {
+            const tbody = document.getElementById('notasFiscaisTableBody');
+            tbody.innerHTML = '';
+
+            notasFiscais.forEach(nota => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${nota.numero}</td>
+                    <td>${nota.dataNfe}</td>
+                    <td>${nota.empresa}</td>
+                    <td>${nota.cfop}</td>
+                    <td>${nota.valorIcms}</td>
+                    <td>${nota.baseCalculo}</td>
+                    <td>${nota.valorTotal}</td>
+                    <td class="${nota.calculo > 0 ? 'red' : ''}">${nota.calculo}</td>
+
+                `;
+                tbody.appendChild(row);
+            });
+        }
+    </script>
+</body>
+</html>

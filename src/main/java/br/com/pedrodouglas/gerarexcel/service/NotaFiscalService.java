@@ -1,13 +1,12 @@
 package br.com.pedrodouglas.gerarexcel.service;
 
+import br.com.pedrodouglas.gerarexcel.model.Nfe;
 import br.com.pedrodouglas.gerarexcel.model.Nfse;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
+import br.com.pedrodouglas.gerarexcel.repository.NfeRepository;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellReference;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 import org.w3c.dom.Document;
@@ -21,18 +20,100 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
 @Service
-public class NfseService {
-    public List<Nfse> parseNfseData(String xml) {
+public class NotaFiscalService {
+
+    final
+    NfeRepository nfeRepository;
+
+    public NotaFiscalService(NfeRepository nfeRepository) {
+        this.nfeRepository = nfeRepository;
+    }
+
+    public List<Nfe> perseNfeData(String xml) {
         try {
-            // Convertendo a String XML para um InputStream usando ByteArrayInputStream
             InputStream inputStream = new ByteArrayInputStream(xml.getBytes("UTF-8"));
 
-            // Criando o Document a partir do InputStream
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document document = builder.parse(new InputSource(inputStream));
+
+            NodeList nfseNodes = document.getElementsByTagName("nfeProc");
+
+            List<Nfe> nfseList = new ArrayList<>();
+            for (int i = 0; i < nfseNodes.getLength(); i++) {
+                Node node = nfseNodes.item(i);
+                if (node.getNodeType() == Node.ELEMENT_NODE) {
+                    Element nfseElement = (Element) node;
+                    Nfe nfse = new Nfe();
+
+                    nfse.setNumero(Integer.valueOf(nfseElement.getElementsByTagName("nNF").item(0).getTextContent()));
+                    nfse.setValorTotal(Double.parseDouble(nfseElement.getElementsByTagName("vNF").item(0).getTextContent()));
+                    nfse.setEmpresa(nfseElement.getElementsByTagName("xNome").item(0).getTextContent());
+                    nfse.setCfop(Integer.valueOf(nfseElement.getElementsByTagName("CFOP").item(0).getTextContent()));
+                    String dataTexto = nfseElement.getElementsByTagName("dhEmi").item(0).getTextContent();
+
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+                    SimpleDateFormat outputFormat = new SimpleDateFormat("dd-MM-yyyy");
+
+                    Date fullDate = dateFormat.parse(dataTexto);
+                    String formattedDate = outputFormat.format(fullDate);
+                    nfse.setDataNfe(formattedDate);
+
+                    NodeList totalNodes = nfseElement.getElementsByTagName("total");
+                    if (totalNodes.getLength() > 0) {
+                        Element totalElement = (Element) totalNodes.item(0);
+
+                        NodeList icmsTotNodes = totalElement.getElementsByTagName("ICMSTot");
+                        if (icmsTotNodes.getLength() > 0) {
+                            Element icmsTotElement = (Element) icmsTotNodes.item(0);
+
+                            // Pega os valores de vBC e vICMS
+                            nfse.setBaseCalculo(Double.parseDouble(icmsTotElement.getElementsByTagName("vBC").item(0).getTextContent()));
+                            nfse.setValorIcms(Double.parseDouble(icmsTotElement.getElementsByTagName("vICMS").item(0).getTextContent()));
+                        }
+                    }
+
+                    nfseList.add(nfse);
+                }
+            }
+
+            return calculoPercentual(nfseList);
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private List<Nfe> calculoPercentual(List<Nfe> nfseList) {
+        for (Nfe nfse : nfseList) {
+            double valorTotal = nfse.getValorTotal();
+            double baseCalculo = nfse.getBaseCalculo();
+            double valorIcms = nfse.getValorIcms();
+
+            double percentual = BigDecimal.valueOf((valorTotal - baseCalculo) * 0.19).setScale(2, RoundingMode.HALF_UP).doubleValue();
+            nfse.setCalculo(percentual);
+        }
+
+        return nfseList;
+
+    }
+
+
+    public List<Nfse> parseNfseData(String xml) {
+        try {
+
+            InputStream inputStream = new ByteArrayInputStream(xml.getBytes("UTF-8"));
+
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
             Document document = builder.parse(new InputSource(inputStream));
@@ -163,20 +244,51 @@ public class NfseService {
         }
     }
 
-    public byte[] gerarCSV(List<Nfse> nfseList) throws IOException {
-        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-             CSVPrinter csvPrinter = new CSVPrinter(new OutputStreamWriter(outputStream), CSVFormat.DEFAULT)) {
+    public byte[] gerarExcelNfe(List<Nfe> nfseList) throws IOException {
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("NFE");
 
-            // Adicione cabeçalhos ao CSV
-            csvPrinter.printRecord("Nota Fiscal", "Valor", "PIS", "COFINS", "IRPJ", "CSLL","ISS", "INSS");
+            Row headerRow = sheet.createRow(0);
+            headerRow.createCell(0).setCellValue("Nota Fiscal");
+            headerRow.createCell(1).setCellValue("Data");
+            headerRow.createCell(2).setCellValue("Empresa");
+            headerRow.createCell(3).setCellValue("CFOP");
+            headerRow.createCell(4).setCellValue("ICMS");
+            headerRow.createCell(5).setCellValue("Base de Cálculo ICMS");
+            headerRow.createCell(6).setCellValue("Valor Total");
+            headerRow.createCell(7).setCellValue("Base de cálculo - Protege");
 
-            // Adicione dados ao CSV
-            for (Nfse nfse : nfseList) {
-                csvPrinter.printRecord(nfse.getNumero(), nfse.getValor(), nfse.getPis(), nfse.getCofins(), nfse.getIrpj(), nfse.getCsll(), nfse.getInss());
+            int rowNum = 1;
+            for (Nfe nfe : nfseList) {
+                Row row = sheet.createRow(rowNum++);
+                row.createCell(0).setCellValue(nfe.getNumero());
+                row.createCell(1).setCellValue(nfe.getDataNfe());
+                row.createCell(2).setCellValue(nfe.getEmpresa());
+                row.createCell(3).setCellValue(nfe.getCfop());
+                row.createCell(4).setCellValue(nfe.getValorIcms());
+                row.createCell(5).setCellValue(nfe.getBaseCalculo());
+                row.createCell(6).setCellValue(nfe.getValorTotal());
+                row.createCell(7).setCellValue(nfe.getCalculo());
             }
 
-            csvPrinter.flush();
+            for (int i = 0; i < 6; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            workbook.write(outputStream);
             return outputStream.toByteArray();
         }
     }
+
+
+    public List<Nfe> getAllNotas() {
+        return nfeRepository.findAll();
+    }
+
+    public void saveAll(List<Nfe> nfseList) {
+        nfeRepository.saveAll(nfseList);
+    }
+
+
 }
