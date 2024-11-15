@@ -56,10 +56,10 @@ public class NotaFiscalService {
                     Element nfseElement = (Element) node;
                     Nfe nfse = new Nfe();
 
-                    nfse.setNumero(Integer.valueOf(nfseElement.getElementsByTagName("nNF").item(0).getTextContent()));
-                    nfse.setValorTotal(Double.parseDouble(nfseElement.getElementsByTagName("vNF").item(0).getTextContent()));
-                    nfse.setEmpresa(nfseElement.getElementsByTagName("xNome").item(0).getTextContent());
-                    nfse.setCfop(Integer.valueOf(nfseElement.getElementsByTagName("CFOP").item(0).getTextContent()));
+                    nfse.setNumero(nfseElement.getElementsByTagName("nNF").item(0) != null ? Integer.valueOf(nfseElement.getElementsByTagName("nNF").item(0).getTextContent()) : null);
+                    nfse.setValorTotal(nfseElement.getElementsByTagName("vNF").item(0) != null ? Double.parseDouble(nfseElement.getElementsByTagName("vNF").item(0).getTextContent()) : null);
+                    nfse.setEmpresa(nfseElement.getElementsByTagName("xNome").item(0) != null ? nfseElement.getElementsByTagName("xNome").item(0).getTextContent() : null);
+                    nfse.setCfop(nfseElement.getElementsByTagName("CFOP").item(0) != null ? Integer.valueOf(nfseElement.getElementsByTagName("CFOP").item(0).getTextContent()) : null);
                     String dataTexto = nfseElement.getElementsByTagName("dhEmi").item(0).getTextContent();
 
                     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
@@ -78,8 +78,8 @@ public class NotaFiscalService {
                             Element icmsTotElement = (Element) icmsTotNodes.item(0);
 
                             // Pega os valores de vBC e vICMS
-                            nfse.setBaseCalculo(Double.parseDouble(icmsTotElement.getElementsByTagName("vBC").item(0).getTextContent()));
-                            nfse.setValorIcms(Double.parseDouble(icmsTotElement.getElementsByTagName("vICMS").item(0).getTextContent()));
+                            nfse.setBaseCalculo(icmsTotElement.getElementsByTagName("vBC").item(0) != null ? Double.parseDouble(icmsTotElement.getElementsByTagName("vBC").item(0).getTextContent()) : null);
+                            nfse.setValorIcms(icmsTotElement.getElementsByTagName("vICMS").item(0) != null ? Double.parseDouble(icmsTotElement.getElementsByTagName("vICMS").item(0).getTextContent()) : null);
                         }
                     }
 
@@ -167,7 +167,7 @@ public class NotaFiscalService {
             for (Nfse nfse : nfseList) {
                 Row row = sheet.createRow(rowNum++);
 
-                if(nfse.getSituacao().equalsIgnoreCase("L040") ||  nfse.getSituacao().equalsIgnoreCase("L050")){
+                if (nfse.getSituacao().equalsIgnoreCase("L040") || nfse.getSituacao().equalsIgnoreCase("L050")) {
                     nfse.setValor(0);
                     nfse.setPis(0);
                     nfse.setCofins(0);
@@ -233,7 +233,6 @@ public class NotaFiscalService {
             Row cofinsARecolher = sheet.createRow(rowNumFinal + 6);
             cofinsARecolher.createCell(0).setCellValue("cofins a recolher");
             cofinsARecolher.createCell(1).setCellValue(totalConfis - totalCofinsNota);
-
 
 
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
