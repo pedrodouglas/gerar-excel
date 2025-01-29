@@ -239,7 +239,8 @@
                     const notasFiscais = await response.json();
                     atualizarTabela(notasFiscais);
                 } else {
-                    alert('Erro ao importar as notas fiscais.');
+                    const errorMessage = await response.text();
+                    alert('Erro ao importar as notas fiscais: ' + errorMessage);
                 }
             } catch (error) {
                 console.error('Erro:', error);
